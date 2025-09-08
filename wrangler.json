@@ -1,0 +1,67 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "account_id": "85150056d998c2e75bd2d12233a8b7d1",
+  "name": "todo-app",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-09-07",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "keep_names": false,
+  "minify": true,
+  "observability": {
+    "enabled": true
+  },
+  "placement": {
+    "mode": "smart"
+  },
+  "vars": {
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_dGVuZGVyLWJlZGJ1Zy0zNi5jbGVyay5hY2NvdW50cy5kZXYk"
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "todo-app"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "todo-cache"
+    },
+    {
+      "binding": "FILES",
+      "bucket_name": "todo-data"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler"]
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "NEXT_TAG_CACHE_D1",
+      "database_id": "2e6fb83c-b61f-48d3-a29d-689e74f2810f",
+      "database_name": "todo-cache"
+    }
+  ],
+  "env": {
+    "dev": {
+      "vars": {
+        "NEXT_PUBLIC_CLERK_API_KEY": "pk_test_dGVuZGVyLWJlZGJ1Zy0zNi5jbGVyay5hY2NvdW50cy5kZXYk"
+      }
+    }
+  }
+}
