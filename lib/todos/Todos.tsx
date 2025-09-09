@@ -13,46 +13,57 @@ type Todo = inferProcedureOutput<
 
 const Todo = ({ todo }: { todo: Todo }) => {
   const utils = trpc.useUtils();
-  const updateTodo = trpc.todos.update.useMutation({
-    onSuccess: async () => {
-      await utils.todos.getAll.invalidate();
-    },
-  }).mutateAsync;
-  const deleteTodo = trpc.todos.delete.useMutation({
+  const {
+    mutateAsync: updateTodo,
+    variables: optimistTodo,
+    isPending,
+  } = trpc.todos.update.useMutation({
     onSuccess: async () => {
       await utils.todos.getAll.invalidate();
     },
   });
+  const { mutateAsync: deleteTodo } = trpc.todos.delete.useMutation({
+    onSuccess: async () => {
+      await utils.todos.getAll.invalidate();
+    },
+  });
+  const done = isPending ? optimistTodo.done : todo.done;
 
   return (
     <div
-      key={todo.id}
-      className="rounded p-2 flex gap-4 justify-between items-center odd:bg-muted"
+      id={todo.id.toString()}
+      className="transition-transform ease-in-out duration-300 p-2 space-y-4 odd:bg-muted shadow-md"
     >
-      <input
-        type="checkbox"
-        className="cursor-pointer"
-        checked={todo.done}
-        onChange={async () =>
-          await updateTodo({ id: todo.id, done: !todo.done })
-        }
-      />
-      <span className={cn("grow", todo.done ? "line-through" : "")}>
-        {todo.text}
-      </span>
-      {todo.s3files.map(({ id }) => (
-        <picture key={todo.id}>
-          <source src={`https://bucket.thebesttodoapp.com/${id}`} />
-        </picture>
-      ))}
-      <Button
-        variant="destructive"
-        size="fit"
-        className="p-2 rounded"
-        onClick={() => deleteTodo.mutate({ id: todo.id })}
-      >
-        <Trash className="size-5" />
-      </Button>
+      <div className="flex justify-between items-center">
+        <label className="cursor-pointer size-10 flex items-center justify-center">
+          <input
+            type="checkbox"
+            className="cursor-pointer size-5"
+            checked={done}
+            onChange={async () =>
+              await updateTodo({ id: todo.id, done: !done })
+            }
+          />
+        </label>
+        <Button
+          variant="destructive"
+          size="icon"
+          className="border-none hover:bg-muted"
+          onClick={() => deleteTodo({ id: todo.id })}
+        >
+          <Trash className="size-5" />
+        </Button>
+      </div>
+      <p className={cn("p-2.5", done && "line-through")}>{todo.text}</p>
+      {todo.s3files.length > 0 && (
+        <div className="grid grid-cols-2 gap-2">
+          {todo.s3files.map(({ id }) => (
+            <picture key={todo.id}>
+              <source src={`https://bucket.thebesttodoapp.com/${id}`} />
+            </picture>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -63,7 +74,7 @@ export function Todos() {
   const pendingTodos = todos.filter((t) => !t.done);
 
   return (
-    <div className="space-y-2">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
       {pendingTodos
         .sort(
           (a, b) =>

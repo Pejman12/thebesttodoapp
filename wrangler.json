@@ -57,6 +57,12 @@
       "database_name": "todo-cache"
     }
   ],
+  "routes": [
+    {
+      "pattern": "thebesttodoapp.com",
+      "custom_domain": true
+    }
+  ],
   "env": {
     "dev": {
       "vars": {

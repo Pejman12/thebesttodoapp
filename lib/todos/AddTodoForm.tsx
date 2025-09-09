@@ -68,9 +68,9 @@ export function AddTodoForm() {
           <>
             <label
               htmlFor={field.name}
-              className="cursor-pointer border-2 p-2 rounded-md"
+              className="cursor-pointer border-2 px-2 rounded-md flex items-center"
             >
-              <FilePlus2 />
+              <FilePlus2 className="size-6" />
             </label>
             <input
               type="file"
