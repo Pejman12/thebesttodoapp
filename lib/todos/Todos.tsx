@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc/client";
 import type { AppRouter } from "@/lib/trpc/router";
 import { cn } from "@/lib/utils/ui";
 
-type Todo = inferProcedureOutput<
+export type Todo = inferProcedureOutput<
   AppRouter["_def"]["procedures"]["todos"]["getAll"]
 >[number];
 
@@ -18,11 +18,32 @@ const Todo = ({ todo }: { todo: Todo }) => {
     variables: optimistTodo,
     isPending,
   } = trpc.todos.update.useMutation({
+    onMutate: async (variables) => {
+      await utils.todos.getAll.cancel();
+      const previousTodos = utils.todos.getAll.getData();
+      utils.todos.getAll.setData(undefined, (old) =>
+        old?.map((curr) => {
+          if (curr.id === todo.id) {
+            return { ...curr, done: variables.done };
+          }
+          return curr;
+        }),
+      );
+      return { previousTodos };
+    },
     onSuccess: async () => {
       await utils.todos.getAll.invalidate();
     },
   });
   const { mutateAsync: deleteTodo } = trpc.todos.delete.useMutation({
+    onMutate: async () => {
+      await utils.todos.getAll.cancel();
+      const previousTodos = utils.todos.getAll.getData();
+      utils.todos.getAll.setData(undefined, (old) =>
+        old?.filter((e) => e.id !== todo.id),
+      );
+      return { previousTodos };
+    },
     onSuccess: async () => {
       await utils.todos.getAll.invalidate();
     },
@@ -70,27 +91,28 @@ const Todo = ({ todo }: { todo: Todo }) => {
 
 export function Todos() {
   const [todos] = trpc.todos.getAll.useSuspenseQuery();
-  const doneTodos = todos.filter((t) => t.done);
-  const pendingTodos = todos.filter((t) => !t.done);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-      {pendingTodos
+      {todos
         .sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         )
-        .map((todo) => (
-          <Todo key={todo.id} todo={todo as unknown as Todo} />
-        ))}
-      {doneTodos
+        .map((todo) =>
+          todo.done ? null : (
+            <Todo key={todo.id} todo={todo as unknown as Todo} />
+          ),
+        )}
+      {todos
         .sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         )
-        .map((todo) => (
-          <Todo key={todo.id} todo={todo as unknown as Todo} />
-        ))}
+        .map(
+          (todo) =>
+            todo.done && <Todo key={todo.id} todo={todo as unknown as Todo} />,
+        )}
     </div>
   );
 }

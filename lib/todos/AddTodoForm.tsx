@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import { formOptions, useForm } from "@tanstack/react-form";
 import { FileIcon, FilePlus2 } from "lucide-react";
 import { z } from "zod/v4";
@@ -19,8 +20,26 @@ const formOpts = formOptions({
 });
 
 export function AddTodoForm() {
+  const { user } = useUser();
   const utils = trpc.useUtils();
   const addTodo = trpc.todos.create.useMutation({
+    onMutate: async (formData) => {
+      await utils.todos.getAll.cancel();
+      const previousTodos = utils.todos.getAll.getData();
+      const text = formData.get("text")?.valueOf() as string;
+      utils.todos.getAll.setData(undefined, (old) => [
+        ...(old ?? []),
+        {
+          id: -1,
+          text,
+          userId: user!.id,
+          done: false,
+          s3files: [],
+          createdAt: new Date().toISOString(),
+        } satisfies NonNullable<typeof old>[number],
+      ]);
+      return { previousTodos };
+    },
     onSuccess: async () => {
       await utils.todos.getAll.invalidate();
     },
@@ -29,6 +48,8 @@ export function AddTodoForm() {
     ...formOpts,
     onSubmit: async ({ value }) => {
       if (!value) return;
+      form.reset();
+      console.log({ value });
       const formData = new FormData();
       formData.append("text", value.text);
       value.files?.forEach((file) => {

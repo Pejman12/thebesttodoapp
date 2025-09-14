@@ -6,7 +6,9 @@ import { Todos } from "@/lib/todos/Todos";
 import TodosLoading from "@/lib/todos/TodosLoading";
 import { trpc } from "@/lib/trpc/server";
 
-export default async function Home() {
+export const dynamic = "force-dynamic";
+
+export default function Home() {
   void trpc.todos.getAll.prefetch();
   return (
     <main>

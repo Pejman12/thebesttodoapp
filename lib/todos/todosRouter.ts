@@ -19,13 +19,16 @@ export const todosRouter = router({
   create: protectedProcedure
     .input(
       z.instanceof(FormData).transform((formData) => {
+        console.log({ formData });
+        const filesKey = "files";
         const formEntries = formData.entries().reduce(
           (prev, curr) => {
             const [key, value] = curr;
+            console.log({ key, value });
             if (key === "files[]") {
-              const filesKey = "files";
               if (!prev[filesKey]) prev[filesKey] = [];
               if (value instanceof File && value.size <= MAX_FILE_SIZE) {
+                console.log("Adding file", value.name);
                 prev[filesKey].push(value);
               }
             } else if (key === "text") {
@@ -42,6 +45,7 @@ export const todosRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      console.log(JSON.stringify(input, null, 2));
       await db.transaction(async (tx) => {
         const todoData = await tx
           .insert(todos)

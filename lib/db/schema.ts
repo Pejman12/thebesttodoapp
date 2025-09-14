@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { type InferSelectModel, relations } from "drizzle-orm";
 import { boolean, integer, pgTable, serial, text, timestamp, uuid, } from "drizzle-orm/pg-core";
 
@@ -9,14 +8,13 @@ export const todos = pgTable("todos", {
   done: boolean("done").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-export type Todo = InferSelectModel<typeof todos>;
 
 export const todosRelations = relations(todos, ({ many }) => ({
   s3files: many(s3files),
 }));
 
 export const s3files = pgTable("s3files", {
-  id: uuid("id").default(randomUUID()).primaryKey(),
+  id: uuid("id").defaultRandom().primaryKey(),
   todoId: integer("todo_id")
     .references(() => todos.id, { onDelete: "cascade" })
     .notNull(),

@@ -1,0 +1,1 @@
+ALTER TABLE "s3files" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();

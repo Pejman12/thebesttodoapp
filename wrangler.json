@@ -14,7 +14,8 @@
     "mode": "smart"
   },
   "vars": {
-    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_dGVuZGVyLWJlZGJ1Zy0zNi5jbGVyay5hY2NvdW50cy5kZXYk"
+    "NEXT_PUBLIC_APP_URL": "https://thebesttodoapp.com",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsudGhlYmVzdHRvZG9hcHAuY29tJA"
   },
   "assets": {
     "directory": ".open-next/assets",
@@ -66,6 +67,7 @@
   "env": {
     "dev": {
       "vars": {
+        "NEXT_PUBLIC_APP_URL": "http://localhost:3000",
         "NEXT_PUBLIC_CLERK_API_KEY": "pk_test_dGVuZGVyLWJlZGJ1Zy0zNi5jbGVyay5hY2NvdW50cy5kZXYk"
       }
     }
