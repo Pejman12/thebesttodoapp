@@ -1,16 +1,23 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import env from "@/lib/utils/env";
 
 const isProtectedRoute = createRouteMatcher(["/"]);
 
-export default clerkMiddleware(async (auth, req) => {
-  const { userId, redirectToSignIn } = await auth();
+export default clerkMiddleware(
+  async (auth, req) => {
+    const { userId, redirectToSignIn } = await auth();
 
-  if (!userId && isProtectedRoute(req)) {
-    // Add custom logic to run before redirecting
+    if (!userId && isProtectedRoute(req)) {
+      // Add custom logic to run before redirecting
 
-    return redirectToSignIn();
-  }
-});
+      return redirectToSignIn();
+    }
+  },
+  {
+    contentSecurityPolicy: {},
+    authorizedParties: [env.appUrl],
+  },
+);
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
