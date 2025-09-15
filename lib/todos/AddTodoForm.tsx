@@ -68,12 +68,7 @@ export function AddTodoForm() {
       formData.append("text", value.text);
       await Promise.all(
         value.files?.map(async (file) => {
-          try {
-            const compressedFile = await compressFile(file);
-            formData.append("files[]", compressedFile);
-          } catch (error) {
-            formData.append("files[]", file);
-          }
+          formData.append("files[]", file);
         }) ?? [],
       );
       await addTodo(formData);
@@ -120,10 +115,18 @@ export function AddTodoForm() {
               accept="image/*"
               multiple
               className="sr-only"
-              onChange={(e) => {
+              onChange={async (e) => {
                 if (!e.target.files) return;
                 const files = Array.from(e.target.files);
-                field.handleChange(files);
+                try {
+                  const compressedFiles = await Promise.all(
+                    files.map(compressFile),
+                  );
+                  field.handleChange(compressedFiles);
+                } catch (err) {
+                  console.error("Error while compressing images", err);
+                  field.handleChange(files);
+                }
               }}
             />
             {field.state.value?.map((file) => (
