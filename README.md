@@ -1,4 +1,4 @@
-# The Best Todo App Ever Made
+# Next.js example todo app with Clerk, Drizzle ORM, NeonDB, and OpenNext
 
 The perfect example of a Next.js full stack application, built with the following technologies:
 
@@ -10,6 +10,7 @@ The perfect example of a Next.js full stack application, built with the followin
 - [Clerk](https://clerk.com/) - User management and authentication
   interfaces
 - [Opennext](https://opennext.dev/) - Open source Next.js build and deployment tool
+- [tRPC](https://trpc.io/) - End-to-end typesafe APIs made easy
 
 ## Getting Started
 
