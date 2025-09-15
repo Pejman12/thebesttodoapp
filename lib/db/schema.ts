@@ -10,21 +10,22 @@ export const todos = pgTable("todos", {
 });
 
 export const todosRelations = relations(todos, ({ many }) => ({
-  s3files: many(s3files),
+  s3files: many(files),
 }));
 
-export const s3files = pgTable("s3files", {
+export const files = pgTable("files", {
   id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
   todoId: integer("todo_id")
     .references(() => todos.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-export type S3File = InferSelectModel<typeof s3files>;
+export type S3File = InferSelectModel<typeof files>;
 
-export const s3filesRelations = relations(s3files, ({ one }) => ({
+export const s3filesRelations = relations(files, ({ one }) => ({
   todo: one(todos, {
-    fields: [s3files.todoId],
+    fields: [files.todoId],
     references: [todos.id],
   }),
 }));

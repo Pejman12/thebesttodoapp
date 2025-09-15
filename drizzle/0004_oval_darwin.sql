@@ -1,0 +1,1 @@
+ALTER TABLE "s3files" ADD COLUMN "type" text NOT NULL;

@@ -1,10 +1,12 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import type { inferProcedureOutput } from "@trpc/server";
 import { Trash } from "lucide-react";
 import { Button } from "@/lib/components/ui/button";
 import { trpc } from "@/lib/trpc/client";
 import type { AppRouter } from "@/lib/trpc/router";
+import env from "@/lib/utils/env";
 import { cn } from "@/lib/utils/ui";
 
 export type Todo = inferProcedureOutput<
@@ -12,6 +14,7 @@ export type Todo = inferProcedureOutput<
 >[number];
 
 const Todo = ({ todo }: { todo: Todo }) => {
+  const { user } = useUser();
   const utils = trpc.useUtils();
   const {
     mutateAsync: updateTodo,
@@ -78,9 +81,13 @@ const Todo = ({ todo }: { todo: Todo }) => {
       <p className={cn("p-2.5", done && "line-through")}>{todo.text}</p>
       {todo.s3files.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
-          {todo.s3files.map(({ id }) => (
+          {todo.s3files.map(({ id, name }) => (
             <picture key={todo.id}>
-              <source src={`https://bucket.thebesttodoapp.com/${id}`} />
+              <source src={`${env.bucketUrl}/${user?.id}/${todo.id}/${name}`} />
+              <img
+                src={`${env.bucketUrl}/${user?.id}/${todo.id}/${name}`}
+                alt={name}
+              />
             </picture>
           ))}
         </div>

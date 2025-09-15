@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { s3files, todos } from "@/lib/db/schema";
+import { files, todos } from "@/lib/db/schema";
 import { protectedProcedure, router } from "@/lib/trpc/init";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 5;
@@ -19,16 +19,13 @@ export const todosRouter = router({
   create: protectedProcedure
     .input(
       z.instanceof(FormData).transform((formData) => {
-        console.log({ formData });
         const filesKey = "files";
         const formEntries = formData.entries().reduce(
           (prev, curr) => {
             const [key, value] = curr;
-            console.log({ key, value });
             if (key === "files[]") {
               if (!prev[filesKey]) prev[filesKey] = [];
               if (value instanceof File && value.size <= MAX_FILE_SIZE) {
-                console.log("Adding file", value.name);
                 prev[filesKey].push(value);
               }
             } else if (key === "text") {
@@ -45,7 +42,7 @@ export const todosRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      console.log(JSON.stringify(input, null, 2));
+      const userId = ctx.auth.userId;
       await db.transaction(async (tx) => {
         const todoData = await tx
           .insert(todos)
@@ -54,17 +51,14 @@ export const todosRouter = router({
             text: input.text,
           })
           .returning();
+        const todoId = todoData[0].id;
         if (input.files) {
           for (const file of input.files) {
-            console.log({ fileName: file.name });
-            const [{ id }] = await tx
-              .insert(s3files)
-              .values({
-                todoId: todoData[0].id,
-              })
-              .returning();
-            console.log({ id });
-            await ctx.filestore.put(id, file);
+            await tx.insert(files).values({
+              todoId,
+              name: file.name,
+            });
+            await ctx.filestore.put(`${userId}/${todoId}/${file.name}`, file);
           }
         }
       });
@@ -83,13 +77,15 @@ export const todosRouter = router({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       await db.transaction(async (tx) => {
-        const files = await tx
+        const filesData = await tx
           .select()
-          .from(s3files)
-          .where(eq(s3files.todoId, input.id));
+          .from(files)
+          .where(eq(files.todoId, input.id));
         await tx.delete(todos).where(eq(todos.id, input.id));
-        for (const file of files) {
-          await ctx.filestore.delete(file.id);
+        for (const file of filesData) {
+          await ctx.filestore.delete(
+            `${ctx.auth.userId}/${input.id}/${file.name}`,
+          );
         }
       });
     }),

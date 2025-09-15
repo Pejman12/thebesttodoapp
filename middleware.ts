@@ -14,7 +14,11 @@ export default clerkMiddleware(
     }
   },
   {
-    contentSecurityPolicy: {},
+    contentSecurityPolicy: {
+      directives: {
+        "img-src": [env.bucketUrl],
+      },
+    },
     authorizedParties: [env.appUrl],
   },
 );
