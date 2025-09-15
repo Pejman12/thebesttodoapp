@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import { boolean, integer, pgTable, serial, text, timestamp, uuid, } from "drizzle-orm/pg-core";
 
 export const todos = pgTable("todos", {
@@ -10,7 +10,7 @@ export const todos = pgTable("todos", {
 });
 
 export const todosRelations = relations(todos, ({ many }) => ({
-  s3files: many(files),
+  files: many(files),
 }));
 
 export const files = pgTable("files", {
@@ -21,9 +21,8 @@ export const files = pgTable("files", {
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-export type S3File = InferSelectModel<typeof files>;
 
-export const s3filesRelations = relations(files, ({ one }) => ({
+export const filesRelations = relations(files, ({ one }) => ({
   todo: one(todos, {
     fields: [files.todoId],
     references: [todos.id],

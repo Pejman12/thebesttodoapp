@@ -15,7 +15,7 @@ export const todosRouter = router({
   getAll: protectedProcedure.query(async ({ ctx }) => {
     return await db.query.todos.findMany({
       with: {
-        s3files: true,
+        files: true,
       },
       where: eq(todos.userId, ctx.auth.userId),
     });
@@ -79,7 +79,7 @@ export const todosRouter = router({
 
   update: protectedProcedure
     .input(z.object({ id: z.number(), done: z.boolean() }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       await db
         .update(todos)
         .set({ done: input.done })

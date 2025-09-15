@@ -77,9 +77,14 @@ const Todo = ({ todo }: { todo: Todo }) => {
         </Button>
       </div>
       <p className={cn("p-2.5", done && "line-through")}>{todo.text}</p>
-      {todo.s3files.length > 0 && (
-        <div className="grid grid-cols-2 gap-2">
-          {todo.s3files.map(({ id, name }) => (
+      {todo.files.length > 0 && (
+        <div
+          className={cn(
+            "grid grid-cols-2 gap-2",
+            todo.files.length === 1 && "grid-cols-1",
+          )}
+        >
+          {todo.files.map(({ id, name }) => (
             <picture key={id}>
               <source src={`${env.bucketUrl}/${name}`} />
               <img src={`${env.bucketUrl}/${name}`} alt={name} />

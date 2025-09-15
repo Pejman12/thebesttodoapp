@@ -34,7 +34,7 @@ export function AddTodoForm() {
           text,
           userId: user!.id,
           done: false,
-          s3files: [],
+          files: [],
           createdAt: new Date().toISOString(),
         } satisfies NonNullable<typeof old>[number],
       ]);
