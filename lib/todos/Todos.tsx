@@ -82,7 +82,7 @@ const Todo = ({ todo }: { todo: Todo }) => {
         >
           {todo.files.map(({ id, name }) => (
             <picture key={id}>
-              <source src={`${env.bucketUrl}/${name}`} />
+              <source srcSet={`${env.bucketUrl}/${name}`} />
               <img src={`${env.bucketUrl}/${name}`} alt={name} />
             </picture>
           ))}
@@ -96,7 +96,7 @@ export function Todos() {
   const [todos] = trpc.todos.getAll.useSuspenseQuery();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-4">
       {todos
         .sort(
           (a, b) =>

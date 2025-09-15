@@ -107,6 +107,7 @@ export function AddTodoForm() {
                 name={field.name}
                 id={field.name}
                 accept="image/*"
+                autoFocus
                 multiple
                 className="sr-only"
                 onChange={async (e) => {
