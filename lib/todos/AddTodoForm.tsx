@@ -66,11 +66,9 @@ export function AddTodoForm() {
       form.reset();
       const formData = new FormData();
       formData.append("text", value.text);
-      await Promise.all(
-        value.files?.map(async (file) => {
-          formData.append("files[]", file);
-        }) ?? [],
-      );
+      value.files?.map(async (file) => {
+        formData.append("files[]", file);
+      });
       await addTodo(formData);
     },
     validators: {

@@ -14,11 +14,7 @@ export type Todo = inferProcedureOutput<
 
 const Todo = ({ todo }: { todo: Todo }) => {
   const utils = trpc.useUtils();
-  const {
-    mutateAsync: updateTodo,
-    variables: optimistTodo,
-    isPending,
-  } = trpc.todos.update.useMutation({
+  const updateTodo = trpc.todos.update.useMutation({
     onMutate: async (variables) => {
       await utils.todos.getAll.cancel();
       const previousTodos = utils.todos.getAll.getData();
@@ -35,8 +31,8 @@ const Todo = ({ todo }: { todo: Todo }) => {
     onSuccess: async () => {
       await utils.todos.getAll.invalidate();
     },
-  });
-  const { mutateAsync: deleteTodo } = trpc.todos.delete.useMutation({
+  }).mutateAsync;
+  const deleteTodo = trpc.todos.delete.useMutation({
     onMutate: async () => {
       await utils.todos.getAll.cancel();
       const previousTodos = utils.todos.getAll.getData();
@@ -48,8 +44,8 @@ const Todo = ({ todo }: { todo: Todo }) => {
     onSuccess: async () => {
       await utils.todos.getAll.invalidate();
     },
-  });
-  const done = isPending ? optimistTodo.done : todo.done;
+  }).mutateAsync;
+  const done = todo.done;
 
   return (
     <div
@@ -68,7 +64,7 @@ const Todo = ({ todo }: { todo: Todo }) => {
           />
         </label>
         <Button
-          variant="destructive"
+          variant="ghost"
           size="icon"
           className="border-none hover:bg-muted"
           onClick={() => deleteTodo({ id: todo.id })}
