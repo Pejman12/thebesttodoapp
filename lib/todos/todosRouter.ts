@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -5,6 +6,10 @@ import { files, todos } from "@/lib/db/schema";
 import { protectedProcedure, router } from "@/lib/trpc/init";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 5;
+
+function createHashName(name: string) {
+  return `${createHash("sha256").update(name).digest("hex")}.${name.split(".").pop() ?? ""}`;
+}
 
 export const todosRouter = router({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -43,6 +48,15 @@ export const todosRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.auth.userId;
+      const filenames = await Promise.all(
+        input.files?.map(async (file) => {
+          const filename = createHashName(`${userId}/${file.name}`);
+          await ctx.filestore.put(filename, file);
+          return filename;
+        }) ?? [],
+      );
+      console.log({ filenames });
+
       await db.transaction(async (tx) => {
         const todoData = await tx
           .insert(todos)
@@ -52,15 +66,14 @@ export const todosRouter = router({
           })
           .returning();
         const todoId = todoData[0].id;
-        if (input.files) {
-          for (const file of input.files) {
-            await tx.insert(files).values({
+        await Promise.all(
+          filenames.map((filename) =>
+            tx.insert(files).values({
               todoId,
-              name: file.name,
-            });
-            await ctx.filestore.put(`${userId}/${todoId}/${file.name}`, file);
-          }
-        }
+              name: filename,
+            }),
+          ),
+        );
       });
     }),
 
@@ -76,17 +89,19 @@ export const todosRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      await db.transaction(async (tx) => {
-        const filesData = await tx
-          .select()
-          .from(files)
-          .where(eq(files.todoId, input.id));
+      const filenames = await db.transaction(async (tx) => {
+        const filesData = await tx.query.files.findMany({
+          columns: {
+            id: true,
+            name: true,
+          },
+          where: eq(files.todoId, input.id),
+        });
         await tx.delete(todos).where(eq(todos.id, input.id));
-        for (const file of filesData) {
-          await ctx.filestore.delete(
-            `${ctx.auth.userId}/${input.id}/${file.name}`,
-          );
-        }
+        return filesData.map((file) => file.name);
       });
+      await Promise.all(
+        filenames.map((filename) => ctx.filestore.delete(filename)),
+      );
     }),
 });
