@@ -40,7 +40,7 @@ export const todosRouter = router({
           },
           {} as { text: string; files?: File[] },
         );
-        if (!formEntries["text"]) {
+        if (!formEntries.text) {
           throw new Error("Text is required");
         }
         return formEntries;
