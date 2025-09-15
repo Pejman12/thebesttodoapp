@@ -1,21 +1,14 @@
-import type { Dispatch, SetStateAction } from "react";
+"use client";
+import { use } from "react";
+import { toggleTodo } from "@/lib/todos/actions";
 import { cn } from "@/lib/utils/ui";
 
-export default function Todos({
-  todos,
-  setTodos,
-}: {
-  todos: { id: number; text: string; done: boolean }[];
-  setTodos: Dispatch<
-    SetStateAction<{ id: number; text: string; done: boolean }[]>
-  >;
+export default function Todos(props: {
+  todos: Promise<{ id: number; text: string; done: boolean }[]>;
 }) {
-  const handleCheckboxChange = (id: number) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, done: !todo.done } : todo,
-      ),
-    );
+  const todos = use(props.todos);
+  const handleCheckboxChange = async (id: number, done: boolean) => {
+    await toggleTodo(id, done);
   };
 
   return (
@@ -30,7 +23,7 @@ export default function Todos({
               type="checkbox"
               className="cursor-pointer size-5"
               checked={todo.done}
-              onChange={() => handleCheckboxChange(todo.id)}
+              onChange={() => handleCheckboxChange(todo.id, !todo.done)}
             />
           </label>
           <span className={cn(todo.done && "line-through")}>{todo.text}</span>

@@ -1,19 +1,15 @@
-import type { Dispatch, FormEvent, SetStateAction } from "react";
+"use client";
+import type { FormEvent } from "react";
 import { Button } from "@/lib/components/ui/button";
+import { addTodo } from "@/lib/todos/actions";
 
-export default function AddTodoForm({
-  setTodos,
-}: {
-  setTodos: Dispatch<
-    SetStateAction<{ id: number; text: string; done: boolean }[]>
-  >;
-}) {
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+export default function AddTodoForm() {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const text = (form.elements.namedItem("text") as HTMLInputElement).value;
     if (text) {
-      setTodos((prev) => [...prev, { id: Date.now(), text, done: false }]);
+      await addTodo(text);
       form.reset();
     }
   };
