@@ -100,33 +100,30 @@ export function AddTodoForm() {
       <form.Field name="files">
         {(field) => (
           <div className="flex gap-2">
-            <label
-              htmlFor={field.name}
-              className="cursor-pointer border-2 py-1.5 px-2 rounded-md flex items-center"
-            >
+            <label className="cursor-pointer border-2 py-1.5 px-2 rounded-md flex items-center">
               <FilePlus2 className="size-6" />
+              <input
+                type="file"
+                name={field.name}
+                id={field.name}
+                accept="image/*"
+                multiple
+                className="sr-only"
+                onChange={async (e) => {
+                  if (!e.target.files) return;
+                  const files = Array.from(e.target.files);
+                  try {
+                    const compressedFiles = await Promise.all(
+                      files.map(compressFile),
+                    );
+                    field.handleChange(compressedFiles);
+                  } catch (err) {
+                    console.error("Error while compressing images", err);
+                    field.handleChange(files);
+                  }
+                }}
+              />
             </label>
-            <input
-              type="file"
-              name={field.name}
-              id={field.name}
-              accept="image/*"
-              multiple
-              className="sr-only"
-              onChange={async (e) => {
-                if (!e.target.files) return;
-                const files = Array.from(e.target.files);
-                try {
-                  const compressedFiles = await Promise.all(
-                    files.map(compressFile),
-                  );
-                  field.handleChange(compressedFiles);
-                } catch (err) {
-                  console.error("Error while compressing images", err);
-                  field.handleChange(files);
-                }
-              }}
-            />
             {field.state.value?.map((file) => (
               <div
                 key={file.name}

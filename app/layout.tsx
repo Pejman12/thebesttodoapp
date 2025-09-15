@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { ReactNode } from "react";
+import { Navbar } from "@/lib/components/Navbar";
 import { TRPCProvider } from "@/lib/trpc/client";
 import { HydrateClient } from "@/lib/trpc/server";
 
@@ -23,7 +24,10 @@ export default function RootLayout({
       <TRPCProvider>
         <HydrateClient>
           <html lang="en">
-            <body className={inter.className}>{children}</body>
+            <body className={inter.className}>
+              <Navbar />
+              {children}
+            </body>
           </html>
         </HydrateClient>
       </TRPCProvider>
