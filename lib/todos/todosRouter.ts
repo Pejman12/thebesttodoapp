@@ -8,7 +8,7 @@ import { protectedProcedure, router } from "@/lib/trpc/init";
 const MAX_FILE_SIZE = 1024 * 1024 * 5;
 
 function createHashName(name: string) {
-  return `${createHash("sha256").update(name).digest("hex")}.${name.split(".").pop() ?? ""}`;
+  return `${createHash("sha256").update(name).digest("hex")}.${/\S+\.(\S+)/.exec(name)?.[1] ?? "bin"}`;
 }
 
 export const todosRouter = router({

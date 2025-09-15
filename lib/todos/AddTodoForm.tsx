@@ -26,6 +26,14 @@ const formOpts = formOptions({
   } as AddTodo,
 });
 
+const compressFile = async (file: File) => {
+  return new File(
+    [await imageCompression(file, imageCompressOptions)],
+    file.name,
+    { type: file.type },
+  );
+};
+
 export function AddTodoForm() {
   const { user } = useUser();
   const utils = trpc.useUtils();
@@ -61,10 +69,7 @@ export function AddTodoForm() {
       await Promise.all(
         value.files?.map(async (file) => {
           try {
-            const compressedFile = await imageCompression(
-              file,
-              imageCompressOptions,
-            );
+            const compressedFile = await compressFile(file);
             formData.append("files[]", compressedFile);
           } catch (error) {
             formData.append("files[]", file);
