@@ -13,7 +13,7 @@ function createHashName(name: string) {
 
 export const todosRouter = router({
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    return await db.query.todos.findMany({
+    return await db().query.todos.findMany({
       with: {
         files: true,
       },
@@ -57,7 +57,7 @@ export const todosRouter = router({
       );
       console.log({ filenames });
 
-      await db.transaction(async (tx) => {
+      await db().transaction(async (tx) => {
         const todoData = await tx
           .insert(todos)
           .values({
@@ -80,7 +80,7 @@ export const todosRouter = router({
   update: protectedProcedure
     .input(z.object({ id: z.number(), done: z.boolean() }))
     .mutation(async ({ input }) => {
-      await db
+      await db()
         .update(todos)
         .set({ done: input.done })
         .where(eq(todos.id, input.id));
@@ -89,7 +89,7 @@ export const todosRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const filenames = await db.transaction(async (tx) => {
+      const filenames = await db().transaction(async (tx) => {
         const filesData = await tx.query.files.findMany({
           columns: {
             id: true,

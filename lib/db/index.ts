@@ -6,5 +6,7 @@ import * as schema from "./schema";
 
 neonConfig.webSocketConstructor = ws;
 
-const pool = new Pool({ connectionString: env.databaseUrl });
-export const db = drizzle({ client: pool, ws, schema });
+export const db = () => {
+  const pool = new Pool({ connectionString: env.databaseUrl });
+  return drizzle({ client: pool, ws, schema });
+};
