@@ -55,7 +55,6 @@ export const todosRouter = router({
           return filename;
         }) ?? [],
       );
-      console.log({ filenames });
 
       await db().transaction(async (tx) => {
         const todoData = await tx

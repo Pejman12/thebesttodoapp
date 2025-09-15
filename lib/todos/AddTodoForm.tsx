@@ -2,10 +2,17 @@
 
 import { useUser } from "@clerk/nextjs";
 import { formOptions, useForm } from "@tanstack/react-form";
+import imageCompression from "browser-image-compression";
 import { FileIcon, FilePlus2 } from "lucide-react";
 import { z } from "zod/v4";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "../components/ui/button";
+
+const imageCompressOptions = {
+  maxSizeMB: 0.3,
+  maxWidthOrHeight: 720,
+  useWebWorker: true,
+} as const;
 
 const addTodoSchema = z.object({
   text: z.string().min(1),
@@ -49,13 +56,21 @@ export function AddTodoForm() {
     onSubmit: async ({ value }) => {
       if (!value) return;
       form.reset();
-      console.log({ value });
       const formData = new FormData();
       formData.append("text", value.text);
-      value.files?.forEach((file) => {
-        formData.append("files[]", file);
-      });
-      console.log({ formData });
+      await Promise.all(
+        value.files?.map(async (file) => {
+          try {
+            const compressedFile = await imageCompression(
+              file,
+              imageCompressOptions,
+            );
+            formData.append("files[]", compressedFile);
+          } catch (error) {
+            formData.append("files[]", file);
+          }
+        }) ?? [],
+      );
       await addTodo(formData);
     },
     validators: {
