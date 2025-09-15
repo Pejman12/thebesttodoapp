@@ -10,7 +10,7 @@ import { Button } from "../components/ui/button";
 
 const imageCompressOptions = {
   maxSizeMB: 0.3,
-  maxWidthOrHeight: 720,
+  maxWidthOrHeight: 1080,
   useWebWorker: true,
 } as const;
 
