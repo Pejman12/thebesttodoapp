@@ -1,4 +1,5 @@
 import type { Dispatch, FormEvent, SetStateAction } from "react";
+import { Button } from "@/lib/components/ui/button";
 
 export default function AddTodoForm({
   setTodos,
@@ -19,8 +20,13 @@ export default function AddTodoForm({
 
   return (
     <form className="flex items-center gap-4" onSubmit={handleSubmit}>
-      <input type="text" name="text" placeholder="add a new todo" />
-      <button type="submit">add</button>
+      <input
+        type="text"
+        className="border p-2 rounded-md w-full"
+        name="text"
+        placeholder="add a new todo"
+      />
+      <Button type="submit">Add</Button>
     </form>
   );
 }
