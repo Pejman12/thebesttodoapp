@@ -3,7 +3,7 @@
 import { formOptions, useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import { Button } from "@/lib/components/ui/button";
-import { addTodo } from "@/lib/todos/actions";
+import { useAddTodo } from "@/lib/todos/todosHooks";
 
 const addTodoSchema = z.object({
   text: z.string().min(1),
@@ -16,11 +16,11 @@ const formOpts = formOptions({
 });
 
 export default function AddTodoForm() {
+  const addTodo = useAddTodo();
   const form = useForm({
     ...formOpts,
     onSubmit: async ({ value }) => {
-      if (!value) return;
-      await addTodo(value.text);
+      await addTodo(value);
       form.reset();
     },
     validators: {

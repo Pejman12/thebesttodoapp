@@ -1,27 +1,23 @@
-import { currentUser } from "@clerk/nextjs/server";
 import { Suspense } from "react";
-import { db } from "@/lib/db";
+import { ErrorBoundary } from "react-error-boundary";
 import AddTodoForm from "@/lib/todos/AddTodoForm";
 import Todos from "@/lib/todos/Todos";
+import TodosLoading from "@/lib/todos/TodosLoading";
+import { trpc } from "@/lib/trpc/server";
 
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-  const getMyTodos = async () => {
-    const user = await currentUser();
-    return db().query.todos.findMany({
-      where: (table, { eq }) => eq(table.userId, user?.id ?? ""),
-    });
-  };
-  const todos = getMyTodos();
-
+  void trpc.todos.getAll.prefetch();
   return (
     <main className="container mx-auto p-4 space-y-4">
       <h1 className="text-2xl font-bold">Todos</h1>
       <AddTodoForm />
-      <Suspense fallback={<p>Loading todos...</p>}>
-        <Todos todos={todos} />
-      </Suspense>
+      <ErrorBoundary fallback={<div>Something went wrong</div>}>
+        <Suspense fallback={<TodosLoading />}>
+          <Todos />
+        </Suspense>
+      </ErrorBoundary>
     </main>
   );
 }
