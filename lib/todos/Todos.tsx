@@ -7,9 +7,6 @@ export default function Todos(props: {
   todos: Promise<{ id: number; text: string; done: boolean }[]>;
 }) {
   const todos = use(props.todos);
-  const handleCheckboxChange = async (id: number, done: boolean) => {
-    await toggleTodo(id, done);
-  };
 
   return (
     <ul className="space-y-4">
@@ -23,7 +20,7 @@ export default function Todos(props: {
               type="checkbox"
               className="cursor-pointer size-5"
               checked={todo.done}
-              onChange={() => handleCheckboxChange(todo.id, !todo.done)}
+              onChange={() => toggleTodo(todo.id, !todo.done)}
             />
           </label>
           <span className={cn(todo.done && "line-through")}>{todo.text}</span>
