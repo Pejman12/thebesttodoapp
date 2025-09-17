@@ -4,9 +4,13 @@
   "name": "todo-app",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-09-07",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
   "keep_names": false,
   "minify": true,
+  "workers_dev": false,
   "observability": {
     "enabled": true
   },
@@ -49,7 +53,9 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["DOQueueHandler"]
+      "new_sqlite_classes": [
+        "DOQueueHandler"
+      ]
     }
   ],
   "d1_databases": [
