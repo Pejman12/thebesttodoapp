@@ -7,7 +7,7 @@ import { Navbar } from "@/lib/components/Navbar";
 import { TRPCProvider } from "@/lib/trpc/client";
 import { HydrateClient } from "@/lib/trpc/server";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({subsets: ["latin"]});
 
 export const metadata: Metadata = {
   title: "The Best Todo App",
@@ -24,10 +24,10 @@ export default function RootLayout({
       <TRPCProvider>
         <HydrateClient>
           <html lang="en">
-            <body className={inter.className}>
-              <Navbar />
-              {children}
-            </body>
+          <body className={`${inter.className} antialiased`}>
+          <Navbar/>
+          {children}
+          </body>
           </html>
         </HydrateClient>
       </TRPCProvider>
