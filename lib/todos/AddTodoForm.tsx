@@ -7,14 +7,17 @@ import { z } from "zod/v4";
 import { useAddTodo } from "@/lib/todos/todosHooks";
 import { Button } from "../components/ui/button";
 
-const imageCompressOptions = {
+const MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
+
+const defaultImageCompressOptions = {
   maxWidthOrHeight: 1080,
   useWebWorker: true,
+  maxIteration: 10,
 } as const;
 
 const addTodoSchema = z.object({
   text: z.string().min(1),
-  files: z.array(z.instanceof(File)).optional(),
+  files: z.array(z.instanceof(File).optional()).optional(),
 });
 type AddTodo = z.infer<typeof addTodoSchema>;
 const formOpts = formOptions({
@@ -25,11 +28,16 @@ const formOpts = formOptions({
 });
 
 const compressFile = async (file: File) => {
-  return new File(
-    [await imageCompression(file, imageCompressOptions)],
-    file.name,
-    {type: file.type},
-  );
+  for (const maxSizeMB of [0.1, 0.3, 0.6, 1]) {
+    try {
+      const blob = await imageCompression(file, {
+        ...defaultImageCompressOptions,
+        maxSizeMB,
+      });
+      return new File([blob], file.name, {type: file.type});
+    } catch {}
+  }
+  if (file.size < MAX_FILE_SIZE) return file;
 };
 
 export function AddTodoForm() {
@@ -42,7 +50,7 @@ export function AddTodoForm() {
       const formData = new FormData();
       formData.append("text", value.text);
       value.files?.map(async (file) => {
-        formData.append("files[]", file);
+        if (file) formData.append("files[]", file);
       });
       await addTodo(formData);
     },
@@ -88,27 +96,24 @@ export function AddTodoForm() {
                 onChange={async (e) => {
                   if (!e.target.files) return;
                   const files = Array.from(e.target.files);
-                  try {
-                    const compressedFiles = await Promise.all(
-                      files.map(compressFile),
-                    );
-                    field.handleChange(compressedFiles);
-                  } catch (err) {
-                    console.error("Error while compressing images", err);
-                    field.handleChange(files);
-                  }
+                  const compressedFiles = await Promise.all(
+                    files.map(compressFile),
+                  );
+                  field.handleChange(compressedFiles);
                 }}
               />
             </label>
-            {field.state.value?.map((file) => (
-              <div
-                key={file.name}
-                className="bg-muted rounded-md p-1 flex gap-2 items-center text-xs text-foreground border-2 "
-              >
-                <FileIcon className="size-6"/>
-                <span className="truncate max-w-40">{file.name}</span>
-              </div>
-            ))}
+            {field.state.value
+                  ?.filter((file) => !!file)
+                  .map((file) => (
+                    <div
+                      key={file.name}
+                      className="bg-muted rounded-md p-1 flex gap-2 items-center text-xs text-foreground border-2 "
+                    >
+                      <FileIcon className="size-6"/>
+                      <span className="truncate max-w-40">{file.name}</span>
+                    </div>
+                  ))}
           </div>
         )}
       </form.Field>
