@@ -12,6 +12,8 @@ The perfect example of a Next.js full stack application, built with the followin
 - [Opennext](https://opennext.dev/) - Open source Next.js build and deployment tool
 - [tRPC](https://trpc.io/) - End-to-end typesafe APIs made easy
 
+You can find the live demo on [thebesttodoapp.com](https://thebesttodoapp.com/).
+
 ## Getting Started
 
 ### Installation
@@ -23,10 +25,11 @@ The perfect example of a Next.js full stack application, built with the followin
 2. Create a `.env` file in the root of your project and add the following environment variables:
    ```
     NEXTJS_ENV=development
-    CLERK_SECRET_KEY=sk_test_...
-    DATABASE_URL="postgresql://<username>:<password>@<host>:<port>/<database>?sslmode=require"
     NEXT_PUBLIC_APP_URL=http://localhost:3000
+    DATABASE_URL="postgresql://<username>:<password>@<host>:<port>/<database>?sslmode=require"
+    CLERK_SECRET_KEY=sk_test_...
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+    NEXT_PUBLIC_BUCKET_URL=https://...
    ```
 3. Generate the database schema
    ```sh
