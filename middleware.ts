@@ -5,7 +5,7 @@ const isProtectedRoute = createRouteMatcher(["/"]);
 
 export default clerkMiddleware(
   async (auth, req) => {
-    const { userId, redirectToSignIn } = await auth();
+    const {userId, redirectToSignIn} = await auth();
 
     if (!userId && isProtectedRoute(req)) {
       // Add custom logic to run before redirecting
@@ -16,7 +16,7 @@ export default clerkMiddleware(
   {
     contentSecurityPolicy: {
       directives: {
-        "img-src": [env.bucketUrl],
+        "img-src": [env.bucketUrl, "blob:"],
       },
     },
     authorizedParties: [env.appUrl],
