@@ -1,19 +1,13 @@
 "use client";
 
 import { formOptions, useForm } from "@tanstack/react-form";
-import imageCompression from "browser-image-compression";
 import { FileIcon, FilePlus2 } from "lucide-react";
 import { z } from "zod/v4";
+import compressImage from "@/lib/images/compress";
 import { useAddTodo } from "@/lib/todos/todosHooks";
 import { Button } from "../components/ui/button";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
-
-const defaultImageCompressOptions = {
-  maxWidthOrHeight: 1080,
-  useWebWorker: true,
-  maxIteration: 10,
-} as const;
 
 const addTodoSchema = z.object({
   text: z.string().min(1),
@@ -28,15 +22,17 @@ const formOpts = formOptions({
 });
 
 const compressFile = async (file: File) => {
-  for (const maxSizeMB of [0.1, 0.3, 0.6, 1]) {
-    try {
-      const blob = await imageCompression(file, {
-        ...defaultImageCompressOptions,
-        maxSizeMB,
-      });
-      return new File([blob], file.name, {type: file.type});
-    } catch {}
+  console.log({file});
+  console.log(`original file size : ${file.size / (1024 * 1024)}`);
+  try {
+    const compressed = await compressImage(file);
+    console.log({compressed});
+    console.log(`compressed file size : ${compressed.size / (1024 * 1024)}`);
+    return compressed;
+  } catch (error) {
+    console.error({error});
   }
+
   if (file.size < MAX_FILE_SIZE) return file;
 };
 
