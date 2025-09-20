@@ -1,7 +1,6 @@
 "use client";
 
 import { formOptions, useForm } from "@tanstack/react-form";
-import imageCompression from "browser-image-compression";
 import { FileIcon, FilePlus2 } from "lucide-react";
 import { z } from "zod/v4";
 import { useAddTodo } from "@/lib/todos/todosHooks";
