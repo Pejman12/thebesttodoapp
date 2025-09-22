@@ -1,5 +1,12 @@
 const MAX_SIZE = 1080;
 
+function replaceFileExtension(filename: string) {
+  const parts = filename.split(".");
+  if (parts.length === 1) return `${filename}.webp`;
+  parts[parts.length - 1] = "webp";
+  return parts.join(".");
+}
+
 export default async function compressImage(file: File): Promise<File> {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -29,12 +36,16 @@ export default async function compressImage(file: File): Promise<File> {
             reject("Compression failed");
             return;
           }
-          const compressedFile = new File([blob], file.name, {
-            type: file.type,
-          });
+          const compressedFile = new File(
+            [blob],
+            replaceFileExtension(file.name),
+            {
+              type: "image/webp",
+            },
+          );
           resolve(compressedFile);
         },
-        file.type,
+        "image/webp",
         0.7,
       );
     };

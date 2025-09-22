@@ -82,7 +82,7 @@ export function AddTodoForm() {
                 type="file"
                 name={field.name}
                 id={field.name}
-                accept="image/webp,image/png,image/jpeg"
+                accept="image/*"
                 multiple
                 className="sr-only"
                 onChange={async (e) => {
