@@ -9,6 +9,7 @@ import { createTRPCReact, type inferReactQueryProcedureOptions, } from "@trpc/re
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import type { ReactNode } from "react";
 import env from "@/lib/utils/env";
+import { transformer } from "@/lib/utils/transformer";
 import { makeQueryClient } from "./query-client";
 import type { AppRouter } from "./router";
 
@@ -18,6 +19,7 @@ export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export const trpc = createTRPCReact<AppRouter>();
 let clientQueryClientSingleton: QueryClient;
+
 function getQueryClient() {
   if (typeof window === "undefined") {
     // Server: always make a new query client
@@ -28,6 +30,7 @@ function getQueryClient() {
     clientQueryClientSingleton = makeQueryClient();
   return clientQueryClientSingleton;
 }
+
 function getUrl() {
   const base = (() => {
     if (typeof window !== "undefined") return "";
@@ -36,6 +39,7 @@ function getUrl() {
   })();
   return `${base}/api/trpc`;
 }
+
 export function TRPCProvider(
   props: Readonly<{
     children: ReactNode;
@@ -52,9 +56,11 @@ export function TRPCProvider(
         condition: (op) => isNonJsonSerializable(op.input),
         true: httpLink({
           url: getUrl(),
+          transformer,
         }),
         false: httpBatchStreamLink({
           url: getUrl(),
+          transformer,
         }),
       }),
     ],
@@ -64,7 +70,7 @@ export function TRPCProvider(
       <QueryClientProvider client={queryClient}>
         <ReactQueryStreamedHydration>
           {props.children}
-          <ReactQueryDevtools initialIsOpen={false} />
+          <ReactQueryDevtools initialIsOpen={false}/>
         </ReactQueryStreamedHydration>
       </QueryClientProvider>
     </trpc.Provider>

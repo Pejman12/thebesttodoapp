@@ -21,21 +21,6 @@ const formOpts = formOptions({
   } as AddTodo,
 });
 
-const compressFile = async (file: File) => {
-  console.log({file});
-  console.log(`original file size : ${file.size / (1024 * 1024)}`);
-  try {
-    const compressed = await compressImage(file);
-    console.log({compressed});
-    console.log(`compressed file size : ${compressed.size / (1024 * 1024)}`);
-    return compressed;
-  } catch (error) {
-    console.error({error});
-  }
-
-  if (file.size < MAX_FILE_SIZE) return file;
-};
-
 export function AddTodoForm() {
   const addTodo = useAddTodo();
   const form = useForm({
@@ -80,25 +65,6 @@ export function AddTodoForm() {
       <form.Field name="files">
         {(field) => (
           <div className="flex gap-2">
-            <label className="cursor-pointer border-2 py-1.5 px-2 rounded-md flex items-center">
-              <FilePlus2 className="size-6"/>
-              <input
-                type="file"
-                name={field.name}
-                id={field.name}
-                accept="image/*"
-                multiple
-                className="sr-only"
-                onChange={async (e) => {
-                  if (!e.target.files) return;
-                  const files = Array.from(e.target.files);
-                  const compressedFiles = await Promise.all(
-                    files.map(compressFile),
-                  );
-                  field.handleChange(compressedFiles);
-                }}
-              />
-            </label>
             {field.state.value
                   ?.filter((file) => !!file)
                   .map((file) => (
@@ -110,6 +76,29 @@ export function AddTodoForm() {
                       <span className="truncate max-w-40">{file.name}</span>
                     </div>
                   ))}
+            <label className="cursor-pointer border-2 py-1.5 px-2 rounded-md flex items-center">
+              <FilePlus2 className="size-6"/>
+              <input
+                type="file"
+                name={field.name}
+                id={field.name}
+                accept="image/webp,image/png,image/jpeg"
+                multiple
+                className="sr-only"
+                onChange={async (e) => {
+                  if (!e.target.files) return;
+                  const files = Array.from(e.target.files);
+                  const compressedFiles = await Promise.all(
+                    files.map((file) =>
+                      compressImage(file).catch(() =>
+                        file.size < MAX_FILE_SIZE ? file : undefined,
+                      ),
+                    ),
+                  );
+                  field.handleChange(compressedFiles);
+                }}
+              />
+            </label>
           </div>
         )}
       </form.Field>

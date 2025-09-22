@@ -1,18 +1,23 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { initTRPC, TRPCError } from "@trpc/server";
+import { db } from "@/lib/db";
+import { transformer } from "@/lib/utils/transformer";
 
 export const createTRPCContext = async () => {
   return {
     auth: await auth(),
     currentUser: await currentUser(),
     filestore: (await getCloudflareContext({async: true})).env.FILES,
+    db: db(),
   };
 };
 
 type Context = Awaited<ReturnType<typeof createTRPCContext>>;
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context>().create({
+  transformer,
+});
 
 // Check if the user is signed in
 // Otherwise, throw an UNAUTHORIZED code

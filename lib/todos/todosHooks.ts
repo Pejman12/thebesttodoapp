@@ -19,7 +19,7 @@ export function useAddTodo() {
           userId: user!.id,
           done: false,
           files: [],
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(),
         } satisfies NonNullable<typeof old>[number],
       ]);
       return {previousTodos};

@@ -13,14 +13,14 @@ export type Todo = inferProcedureOutput<
   AppRouter["_def"]["procedures"]["todos"]["getAll"]
 >[number];
 
-function Todo({todo}: { todo: Todo }) {
+function Todo({todo, index}: { todo: Todo; index: number }) {
   const updateTodo = useUpdateTodo();
   const deleteTodo = useDeleteTodo();
 
   return (
     <div
       id={todo.id.toString()}
-      className="transition-transform ease-in-out duration-300 p-2 space-y-4 odd:bg-muted shadow-md"
+      className="transition-transform ease-in-out duration-300 p-2 rounded-md space-y-4 odd:bg-muted shadow-md"
     >
       <div className="flex justify-between items-center">
         <label className="cursor-pointer size-10 flex items-center justify-center">
@@ -36,7 +36,7 @@ function Todo({todo}: { todo: Todo }) {
         <Button
           variant="ghost"
           size="icon"
-          className="border-none hover:bg-muted"
+          className="border-none data-[hovered]:bg-foreground/10"
           onClick={() => deleteTodo({id: todo.id})}
         >
           <Trash className="size-5"/>
@@ -64,26 +64,19 @@ function Todo({todo}: { todo: Todo }) {
 
 export function Todos() {
   const [todos] = trpc.todos.getAll.useSuspenseQuery();
+  const orderedTodos = [
+    ...todos
+    .filter((todo) => !todo.done)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+    ...todos
+    .filter((todo) => todo.done)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+  ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-      {todos
-      .filter((todo) => !todo.done)
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      )
-      .map((todo) => (
-        <Todo key={todo.id} todo={todo as unknown as Todo}/>
-      ))}
-      {todos
-      .filter((todo) => todo.done)
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      )
-      .map((todo) => (
-        <Todo key={todo.id} todo={todo as unknown as Todo}/>
+      {orderedTodos.map((todo, index) => (
+        <Todo key={todo.id} index={index} todo={todo}/>
       ))}
     </div>
   );
