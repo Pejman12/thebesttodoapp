@@ -62,15 +62,26 @@ function Todo({todo, index}: { todo: Todo; index: number }) {
   );
 }
 
+function getTimeSafe(date: Date | string) {
+  return new Date(date).getTime();
+}
+
+function dateSort(a?: Date | string, b?: Date | string) {
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+  return getTimeSafe(b) - getTimeSafe(a);
+}
+
 export function Todos() {
   const [todos] = trpc.todos.getAll.useSuspenseQuery();
   const orderedTodos = [
     ...todos
     .filter((todo) => !todo.done)
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+    .sort((a, b) => dateSort(a.createdAt, b.createdAt)),
     ...todos
     .filter((todo) => todo.done)
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+    .sort((a, b) => dateSort(a.createdAt, b.createdAt)),
   ];
 
   return (
