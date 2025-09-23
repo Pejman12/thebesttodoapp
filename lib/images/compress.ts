@@ -1,13 +1,20 @@
 const MAX_SIZE = 1080;
 
+function isSafari() {
+  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+}
+
 function replaceFileExtension(filename: string) {
+  const extension = isSafari() ? "jpeg" : "webp";
   const parts = filename.split(".");
-  if (parts.length === 1) return `${filename}.webp`;
-  parts[parts.length - 1] = "webp";
+  if (parts.length === 1) return `${filename}.${extension}`;
+  parts[parts.length - 1] = extension;
   return parts.join(".");
 }
 
 export default async function compressImage(file: File): Promise<File> {
+  const fileType = isSafari() ? "image/jpeg" : "image/webp"; // Safari does not support WebP
+
   return new Promise((resolve, reject) => {
     const image = new Image();
     const url = window.URL || window.webkitURL;
@@ -40,12 +47,12 @@ export default async function compressImage(file: File): Promise<File> {
             [blob],
             replaceFileExtension(file.name),
             {
-              type: "image/webp",
+              type: fileType,
             },
           );
           resolve(compressedFile);
         },
-        "image/webp",
+        fileType,
         0.7,
       );
     };

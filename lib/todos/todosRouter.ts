@@ -1,9 +1,9 @@
-import { createHash } from "node:crypto";
-import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
-import { files, todos } from "@/lib/db/schema";
-import { protectedProcedure, router } from "@/lib/trpc/init";
+import {createHash} from "node:crypto";
+import {TRPCError} from "@trpc/server";
+import {eq} from "drizzle-orm";
+import {z} from "zod";
+import {files, todos} from "@/lib/db/schema";
+import {protectedProcedure, router} from "@/lib/trpc/init";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 5;
 
@@ -50,67 +50,65 @@ export const todosRouter = router({
   ),
 
   create: protectedProcedure
-  .input(z.instanceof(FormData).transform(toPojo))
-  .mutation(async ({ctx, input}) => {
-    const userId = ctx.auth.userId;
-    let filenames: string[] = [];
-    if (input.files) {
-      filenames = await Promise.all(
-        input.files.map(async (file) => {
-          const filename = createHashName(`${userId}/${file.name}`);
-          await ctx.filestore.put(filename, file);
-          return filename;
-        }),
-      );
-    }
-
-    await ctx.db.transaction(async (tx) => {
-      const todoData = await tx
-      .insert(todos)
-      .values({
-        userId: ctx.auth.userId,
-        text: input.text,
-      })
-      .returning();
-      const todoId = todoData[0].id;
-      await Promise.all(
-        filenames.map((filename) =>
-          tx.insert(files).values({
-            todoId,
-            name: filename,
+    .input(z.instanceof(FormData).transform(toPojo))
+    .mutation(async ({ctx, input}) => {
+      const userId = ctx.auth.userId;
+      let filenames: string[] = [];
+      if (input.files) {
+        filenames = await Promise.all(
+          input.files.map(async (file) => {
+            const filename = createHashName(`${userId}/${file.name}`);
+            const renamedFile = new File([file], filename, {type: file.type});
+            await ctx.filestore.put(filename, renamedFile);
+            return filename;
           }),
-        ),
-      );
-    });
-  }),
+        );
+      }
+
+      await ctx.db.transaction(async (tx) => {
+        const todoData = await tx
+          .insert(todos)
+          .values({
+            userId: ctx.auth.userId,
+            text: input.text,
+          })
+          .returning();
+        const todoId = todoData[0].id;
+        const fileValues = filenames.map((filename) => ({
+          todoId,
+          name: filename,
+        }));
+        if (fileValues.length > 0) await tx.insert(files).values(fileValues);
+      });
+    }),
 
   update: protectedProcedure
-  .input(z.object({id: z.number(), done: z.boolean()}))
-  .mutation(async ({ctx, input}) => {
-    await ctx.db.transaction(async (tx) => {
-      await tx
-      .update(todos)
-      .set({done: input.done})
-      .where(eq(todos.id, input.id));
-    });
-  }),
+    .input(z.object({id: z.number(), done: z.boolean()}))
+    .mutation(async ({ctx, input}) => {
+      await ctx.db.transaction(async (tx) => {
+        await tx
+          .update(todos)
+          .set({done: input.done})
+          .where(eq(todos.id, input.id));
+      });
+    }),
 
   delete: protectedProcedure
-  .input(z.object({id: z.number()}))
-  .mutation(async ({ctx, input}) => {
-    const filenames = await ctx.db.transaction(async (tx) => {
-      const filesData = await tx.query.files.findMany({
-        columns: {
-          id: true,
-          name: true,
-        },
-        where: (files, {eq}) => eq(files.todoId, input.id),
+    .input(z.object({id: z.number()}))
+    .mutation(async ({ctx, input}) => {
+      const filenames = await ctx.db.transaction(async (tx) => {
+        const filesData = await tx.query.files.findMany({
+          columns: {
+            id: true,
+            name: true,
+          },
+          where: (files, {eq}) => eq(files.todoId, input.id),
+        });
+        await tx.delete(todos).where(eq(todos.id, input.id));
+        return filesData.map((file) => file.name);
       });
-      await tx.delete(todos).where(eq(todos.id, input.id));
-      return filesData.map((file) => file.name);
-    });
-    await Promise.all(
-      filenames.map((filename) => ctx.filestore.delete(filename)),
-    );
-  }),
+      await Promise.all(
+        filenames.map((filename) => ctx.filestore.delete(filename)),
+      );
+    }),
 });
