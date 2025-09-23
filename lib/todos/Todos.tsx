@@ -1,19 +1,19 @@
 "use client";
 
-import type { inferProcedureOutput } from "@trpc/server";
-import { Trash } from "lucide-react";
-import { Button } from "@/lib/components/ui/button";
-import { useDeleteTodo, useUpdateTodo } from "@/lib/todos/todosHooks";
-import { trpc } from "@/lib/trpc/client";
-import type { AppRouter } from "@/lib/trpc/router";
+import type {inferProcedureOutput} from "@trpc/server";
+import {Trash} from "lucide-react";
+import {Button} from "@/lib/components/ui/button";
+import {useDeleteTodo, useUpdateTodo} from "@/lib/todos/todosHooks";
+import {trpc} from "@/lib/trpc/client";
+import type {AppRouter} from "@/lib/trpc/router";
 import env from "@/lib/utils/env";
-import { cn } from "@/lib/utils/ui";
+import {cn} from "@/lib/utils/ui";
 
 export type Todo = inferProcedureOutput<
   AppRouter["_def"]["procedures"]["todos"]["getAll"]
 >[number];
 
-function Todo({todo, index}: { todo: Todo; index: number }) {
+function Todo({todo}: { todo: Todo }) {
   const updateTodo = useUpdateTodo();
   const deleteTodo = useDeleteTodo();
 
@@ -77,18 +77,18 @@ export function Todos() {
   const [todos] = trpc.todos.getAll.useSuspenseQuery();
   const orderedTodos = [
     ...todos
-    .filter((todo) => !todo.done)
-    .sort((a, b) => dateSort(a.createdAt, b.createdAt)),
+      .filter((todo) => !todo.done)
+      .sort((a, b) => dateSort(a.createdAt, b.createdAt)),
     ...todos
-    .filter((todo) => todo.done)
-    .sort((a, b) => dateSort(a.createdAt, b.createdAt)),
+      .filter((todo) => todo.done)
+      .sort((a, b) => dateSort(a.createdAt, b.createdAt)),
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-      {orderedTodos.map((todo, index) => (
-        <Todo key={todo.id} index={index} todo={todo}/>
+    <>
+      {orderedTodos.map((todo) => (
+        <Todo key={todo.id} todo={todo}/>
       ))}
-    </div>
+    </>
   );
 }

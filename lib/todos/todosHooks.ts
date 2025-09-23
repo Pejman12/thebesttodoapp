@@ -1,7 +1,7 @@
 "use client";
 
-import { useUser } from "@clerk/shared/react";
-import { trpc } from "@/lib/trpc/client";
+import {useUser} from "@clerk/shared/react";
+import {trpc} from "@/lib/trpc/client";
 
 export function useAddTodo() {
   const {user} = useUser();
@@ -14,7 +14,7 @@ export function useAddTodo() {
       utils.todos.getAll.setData(undefined, (old) => [
         ...(old ?? []),
         {
-          id: -1,
+          id: Date.now(),
           text,
           userId: user!.id,
           done: false,
